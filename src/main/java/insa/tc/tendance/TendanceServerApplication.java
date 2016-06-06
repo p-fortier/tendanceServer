@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 @EnableAutoConfiguration
 @SpringBootApplication
@@ -41,15 +42,37 @@ public class TendanceServerApplication {
 }
 
 @RestController
-@RequestMapping("/myprofil")
+@RequestMapping("/")
 class UserRestController {
 
     private final UserRepository userRepository;
+    @RequestMapping(value = "/users", method = RequestMethod.GET)
+    List<User> readAllUser(){
+        return this.userRepository.findAll();
+    }
 
-    @RequestMapping(method = RequestMethod.GET)
-    Collection<User> readUsers(@RequestParam(value = "username") String username, @RequestParam(value = "password") String password) {
+
+    @RequestMapping(value = "/myprofil" ,method = RequestMethod.GET)
+    Collection<User> readUser(@RequestParam(value = "username") String username, @RequestParam(value = "password") String password) {
         //this.validateUser(username, password);
         return this.userRepository.findByUsername(username);
+    }
+
+    @RequestMapping(value = "/myfriends", method = RequestMethod.GET)
+    Collection<User> readFriends(@RequestParam(value = "username") String username, @RequestParam(value = "password") String password){
+        //get userid
+        User userid = this.userRepository.findByUsernameAndPassword(username,password);
+        return userid.getFriends();
+
+    }
+
+    @RequestMapping(value = "/friend/{id}", method = RequestMethod.POST)
+    String add(@PathVariable Long id, @RequestParam(value = "username") String username, @RequestParam(value = "password") String password){
+
+        User user = this.userRepository.findByUsernameAndPassword(username,password);
+        user.getFriends().add(this.userRepository.findOne(id));
+        this.userRepository.save(user);
+        return "ok";
     }
 
     @Autowired

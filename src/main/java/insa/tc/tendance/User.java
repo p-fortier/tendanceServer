@@ -1,9 +1,11 @@
 package insa.tc.tendance;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.sql.Date;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -12,11 +14,17 @@ import java.util.List;
 
 @Entity
 public class User {
-
+    @JsonBackReference
     @OneToMany(mappedBy = "owner")
     private List<Clothe> clothes;
 
-    //friends
+
+    @JsonBackReference
+    @ManyToMany
+    @JoinTable(
+    joinColumns=@JoinColumn(name="user_a"),
+    inverseJoinColumns=@JoinColumn(name="user_b"))
+    private List<User> friends;
 
     @OneToMany(mappedBy = "owner")
     private List<Outfit> outfits;
@@ -32,6 +40,7 @@ public class User {
     @GeneratedValue
     private long id;
 
+    @JsonBackReference
     public List<Clothe> getMyClothes(){
         return clothes;
     }
@@ -60,8 +69,44 @@ public class User {
         return private_profil;
     }
 
+    public List<User> getFriends() {
+        return friends;
+    }
+
     public String getEmail() {
         return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public void setSexe(boolean sexe) {
+        this.sexe = sexe;
+    }
+
+    public void setPrivate_profil(boolean private_profil) {
+        this.private_profil = private_profil;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setAge(Date age) {
+        this.age = age;
     }
 
     @JsonIgnore
