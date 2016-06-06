@@ -15,6 +15,16 @@ public class Style {
     @GeneratedValue
     private long id;
 
-    public String style_name;
+    private String style_name;
 
+    public Style(String style_name) {
+        this.style_name = style_name;
+    }
+
+    public String getStyle_name() {
+        return style_name;
+    }
+
+    Style(){//JPA ONLY
+    }
 }

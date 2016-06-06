@@ -11,15 +11,19 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.el.LambdaExpression;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 @EnableAutoConfiguration
 @SpringBootApplication
 @Configuration
 @ComponentScan
 public class TendanceServerApplication {
+    public static final String ROOT = "images";
 
 	public static void main(String[] args) {
 		SpringApplication.run(TendanceServerApplication.class, args);
@@ -31,60 +35,33 @@ public class TendanceServerApplication {
 						   StyleRepository styleRepository,
 						   TypeRepository typeRepository,
 						   ClotheRepository clotheRepository){
-        return (evt) -> Arrays.asList(
-        "pfortier,cemonet,mbakkali".split(","))
+        new File(ROOT).mkdir(); //root pour les images
+
+
+        Consumer styles = (e) -> Arrays.asList(
+            "worker,casual,sport,gala,sapekomjamais".split(","))
                 .forEach(
-                        a -> {
-                                User user = userRepository.save(new User(a+"@insa-lyon.fr",a,"password"));
+                        a ->  {
+                            Style style = styleRepository.save(new Style(a));
                         });
 
+        Consumer users = (e) -> Arrays.asList(
+                "pfortier,cemonet,mbakkali".split(","))
+                .forEach(
+                        a -> {
+                            User user = userRepository.save(new User(a + "@insa-lyon.fr", a, "password"));
+                        });
+
+        styles.accept(0);
+        users.accept(0);
+
+        return null;
 	}
 }
 
-@RestController
-@RequestMapping("/")
-class UserRestController {
-
-    private final UserRepository userRepository;
-    @RequestMapping(value = "/users", method = RequestMethod.GET)
-    List<User> readAllUser(){
-        return this.userRepository.findAll();
-    }
 
 
-    @RequestMapping(value = "/myprofil" ,method = RequestMethod.GET)
-    Collection<User> readUser(@RequestParam(value = "username") String username, @RequestParam(value = "password") String password) {
-        //this.validateUser(username, password);
-        return this.userRepository.findByUsername(username);
-    }
 
-    @RequestMapping(value = "/myfriends", method = RequestMethod.GET)
-    Collection<User> readFriends(@RequestParam(value = "username") String username, @RequestParam(value = "password") String password){
-        //get userid
-        User userid = this.userRepository.findByUsernameAndPassword(username,password);
-        return userid.getFriends();
-
-    }
-
-    @RequestMapping(value = "/friend/{id}", method = RequestMethod.POST)
-    String add(@PathVariable Long id, @RequestParam(value = "username") String username, @RequestParam(value = "password") String password){
-
-        User user = this.userRepository.findByUsernameAndPassword(username,password);
-        user.getFriends().add(this.userRepository.findOne(id));
-        this.userRepository.save(user);
-        return "ok";
-    }
-
-    @Autowired
-    public UserRestController(UserRepository userRepository){
-        this.userRepository = userRepository;
-    }
-
-    private void validateUser(String username, String password) {
-        this.userRepository.findByUsernameAndPassword(username, password);
-    }
-
-}
 
 @ResponseStatus(HttpStatus.NOT_FOUND)
 class UserNotFoundException extends RuntimeException {
